@@ -1,5 +1,5 @@
 import os
-import importlib.util
+import scanner_module
 import streamlit as st
 
 # ✅ Load scanner_module.py dynamically
@@ -36,5 +36,6 @@ with st.expander("📤 Instagram साठी Caption Export करा"):
 st.markdown("---")
 st.caption(f"🔄 शेवटचा अपडेट: {stock_data[0]['timestamp']}")
 st.caption("© Suresh Yadav | Insta-ready | Mentor-grade Marathi dashboard")
+
 
 
