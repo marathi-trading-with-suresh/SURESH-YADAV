@@ -1,8 +1,11 @@
 # scanner_module.py
 import pandas as pd
+import os
 import random
 
 def load_nifty200(csv_path):
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"CSV फाईल सापडली नाही: {csv_path}")
     df = pd.read_csv(csv_path)
     df = df[df["Symbol"].notna()]
     return df
@@ -10,12 +13,11 @@ def load_nifty200(csv_path):
 def get_top10(df):
     return df.sample(10).reset_index(drop=True)
 
-# 📈 Index Options Signal Generator
 def get_index_signals():
     index_data = []
 
-    # Nifty Signal
-    nifty_spot = 22450  # तू API किंवा manual update करू शकतोस
+    # Nifty
+    nifty_spot = 22450
     nifty_strike = round(nifty_spot / 50) * 50
     nifty_direction = random.choice(["Call", "Put"])
     nifty_entry = 110 if nifty_direction == "Call" else 95
@@ -31,7 +33,7 @@ def get_index_signals():
         "Stoploss": nifty_stoploss
     })
 
-    # BankNifty Signal
+    # BankNifty
     banknifty_spot = 48200
     banknifty_strike = round(banknifty_spot / 100) * 100
     banknifty_direction = random.choice(["Call", "Put"])
