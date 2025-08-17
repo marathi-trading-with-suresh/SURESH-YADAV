@@ -1,13 +1,30 @@
 import datetime
 
 def scan_stocks():
-    suggestions = [
-        {"stock": "टाटा मोटर्स", "strike": 720, "verdict": "बाय करा 🚀"},
-        {"stock": "रिलायन्स", "strike": 2450, "verdict": "थांबा ⏳"},
-        {"stock": "इन्फोसिस", "strike": 1520, "verdict": "सेल करा 📉"}
+    now = datetime.datetime.now().strftime("%d-%m-%Y %I:%M %p")
+
+    stocks = [
+        {"name": "TCS", "strike": 3800, "verdict": "✅ BUY"},
+        {"name": "INFY", "strike": 1450, "verdict": "⚠️ WATCH"},
+        {"name": "RELIANCE", "strike": 2500, "verdict": "❌ AVOID"},
     ]
-    timestamp = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
-    return {
-        "timestamp": timestamp,
-        "stocks": suggestions
+
+    verdict_map = {
+        "✅ BUY": "🟢 खरेदी",
+        "⚠️ WATCH": "🟡 निरीक्षण",
+        "❌ AVOID": "🔴 टाळा"
     }
+
+    enhanced = []
+    for stock in stocks:
+        verdict = verdict_map.get(stock["verdict"], stock["verdict"])
+        caption = f"{stock['name']} – स्ट्राइक ₹{stock['strike']} – {verdict}"
+        enhanced.append({
+            "name": stock["name"],
+            "strike": stock["strike"],
+            "verdict": verdict,
+            "caption": caption,
+            "timestamp": now
+        })
+
+    return enhanced
