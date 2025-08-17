@@ -36,7 +36,6 @@ for signal in index_signals:
 import streamlit as st
 import pandas as pd
 
-# 🔹 2. Direction Logic Function
 def get_trade_direction(rsi, macd_signal, sector_trend):
     if rsi > 55 and macd_signal.lower() == "bullish" and sector_trend.lower() == "positive":
         return "Buy ✅"
@@ -45,24 +44,33 @@ def get_trade_direction(rsi, macd_signal, sector_trend):
     else:
         return "Watch Only 👀"
 
-# 🔹 3. Sample Data (तू हे CSV मधून घेऊ शकतोस)
-stocks = [
-    {"Stock": "BPCL", "Sector": "Oil & Gas", "RSI": 62, "MACD": "Bullish", "Sector Trend": "Positive"},
-    {"Stock": "Tata Motors", "Sector": "Automobile", "RSI": 38, "MACD": "Bearish", "Sector Trend": "Negative"},
-    {"Stock": "SBI Cards", "Sector": "Financial", "RSI": 50, "MACD": "Neutral", "Sector Trend": "Neutral"},
-]
+def filter_top_stocks(df):
+    df["Score"] = 0
+    df["MACD"] = df["MACD"].str.lower()
+    df["Sector Trend"] = df["Sector Trend"].str.lower()
 
-# 🔹 4. Apply Direction Logic
-for stock in stocks:
-    stock["Direction"] = get_trade_direction(stock["RSI"], stock["MACD"], stock["Sector Trend"])
+    df.loc[(df["RSI"] > 55), "Score"] += 1
+    df.loc[(df["MACD"] == "bullish"), "Score"] += 1
+    df.loc[(df["Sector Trend"] == "positive"), "Score"] += 1
 
-# 🔹 5. Convert to DataFrame
-df = pd.DataFrame(stocks)
+    top10 = df.sort_values(by="Score", ascending=False).head(10)
+    return top10
 
-# 🔹 6. Display in Dashboard
-st.markdown("## 📊 आजचे Intraday संकेत — Direction सहित")
-st.dataframe(df, use_container_width=True)
+# 📂 Load CSV with technical data
+df = pd.read_csv("Nifty200list.csv")  # CSV must include RSI, MACD, Sector Trend
 
+# 🎯 Filter top 10 stocks
+top_stocks = filter_top_stocks(df)
+
+# ➕ Add direction
+top_stocks["Direction"] = top_stocks.apply(
+    lambda row: get_trade_direction(row["RSI"], row["MACD"], row["Sector Trend"]),
+    axis=1
+)
+
+# 📊 Display
+st.markdown("## 🔟 आजचे Top 10 Intraday संकेत (Nifty 200 मधून)")
+st.dataframe(top_stocks[["Stock", "Sector", "RSI", "MACD", "Sector Trend", "Direction"]], use_container_width=True)
 
 
 
