@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # 📁 CSV path
-CSV_PATH = "C:/Users/ASUS/Downloads/Nifty200list.csv"
+CSV_PATH = "Nifty200list.csv"
 
 # 📘 Trade direction logic
 def get_trade_direction(rsi, macd, sector_trend):
@@ -88,6 +88,7 @@ for signal in index_signals:
         f"💡 **{signal['Index']} {signal['Type']} {signal['Strike']}**\n"
         f"💰 Premium: ₹{signal['Premium']} | 🎯 Target: ₹{signal['Target']} | 🛑 SL: ₹{signal['Stoploss']} | 📢 Verdict: {signal['Verdict']}"
     )
+
 
 
 
