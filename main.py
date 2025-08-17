@@ -3,7 +3,7 @@ from datetime import datetime
 from scanner_module import load_nifty200, get_top10, get_index_signals
 
 # ✅ CSV फाईलचा योग्य path
-CSV_PATH = "C:\Users\ASUS\OneDrive\Desktop\marathi_trade_with_suresh\Nifty200list.csv"
+CSV_PATH = "C:/Users/ASUS/OneDrive/Desktop/marathi_trade_with_suresh/Nifty200list.csv"
 
 # 🖥️ Page Setup
 st.set_page_config(page_title="📊 Marathi Trading Dashboard", layout="centered")
@@ -32,4 +32,5 @@ for signal in index_signals:
         f"💡 **{signal['Index']} {signal['Type']} {signal['Strike']}**\n"
         f"💰 Premium: ₹{signal['Premium']} | 🎯 Target: ₹{signal['Target']} | 🛑 SL: ₹{signal['Stoploss']}"
     )
+
 
