@@ -1,6 +1,6 @@
-Company Name,Industry,Symbol,Bonus,Div,Div Amt,MACD
-ABB India Ltd.,Capital Goods,ABB,0,2,30,
-ACC Ltd.,Construction Materials,ACC,0,1,10,
+Company Name,Industry,Symbol,Bonus,macd ,rsi,sector trend
+ABB India Ltd.,Capital Goods,ABB,0,,,
+ACC Ltd.,Construction Materials,ACC,0,,,
 APL Apollo Tubes Ltd.,Capital Goods,APLAPOLLO,,,,
 AU Small Finance Bank Ltd.,Financial Services,AUBANK,,,,
 Adani Energy Solutions Ltd.,Power,ADANIENSOL,,,,
@@ -173,7 +173,7 @@ Suzlon Energy Ltd.,Capital Goods,SUZLON,,,,
 Swiggy Ltd.,Consumer Services,SWIGGY,,,,
 TVS Motor Company Ltd.,Automobile and Auto Components,TVSMOTOR,,,,
 Tata Communications Ltd.,Telecommunication,TATACOMM,,,,
-Tata Consultancy Services Ltd.,Information Technology,TCS,0,5,75,
+Tata Consultancy Services Ltd.,Information Technology,TCS,0,,,
 Tata Consumer Products Ltd.,Fast Moving Consumer Goods,TATACONSUM,,,,
 Tata Elxsi Ltd.,Information Technology,TATAELXSI,,,,
 Tata Motors Ltd.,Automobile and Auto Components,TATAMOTORS,,,,
