@@ -1,32 +1,48 @@
 import streamlit as st
-import scanner_module  # ✅ Standard import
+import pandas as pd
+from datetime import datetime
 
-# 📊 Page config + Marathi header
-st.set_page_config(page_title="📈 माझा ट्रेडिंग साथी", layout="centered")
-st.markdown("<h1 style='text-align: center;'>📈 माझा ट्रेडिंग साथी – Suresh</h1>", unsafe_allow_html=True)
-st.markdown("#### आजचे ट्रेडिंग सल्ले आणि ऑप्शन सिग्नल्स")
+st.set_page_config(page_title="माझा ट्रेडिंग साथी – Suresh", layout="wide")
 
-# 🔁 Refresh button
-if st.button("🔁 डेटा Refresh करा"):
-    st.experimental_rerun()
+# 🟢 Header
+st.title("📈 माझा ट्रेडिंग साथी – Suresh")
+st.caption(f"🔄 Updated at: {datetime.now().strftime('%H:%M:%S')} IST")
 
-# 🔍 Scan stocks + display Marathi captions
-stock_data = []
-try:
-    stock_data = scanner_module.scan_stocks()
-    for stock in stock_data:
-        st.write(stock["caption"])
-except Exception as e:
-    st.error(f"डेटा मिळवताना त्रुटी आली: {e}")
+# 📈 Intraday Stock Suggestions
+st.subheader("📊 Intraday Stock Suggestions")
+intraday_data = pd.DataFrame({
+    "Stock": ["TATASTEEL", "RELIANCE", "INFY"],
+    "Verdict": ["✅ Buy", "❌ Sell", "🟡 Hold"],
+    "Strike Price": ["₹1420 CE", "₹2600 PE", "₹1500 CE"],
+    "Marathi Caption": [
+        "TATASTEEL वर खरेदीचा सूर – ₹1420 CE",
+        "RELIANCE मध्ये विक्रीचा इशारा – ₹2600 PE",
+        "INFY साठी थांबा – ₹1500 CE"
+    ]
+})
+st.dataframe(intraday_data, use_container_width=True)
 
-# 📤 Insta Caption Exporter
-if stock_data:
-    with st.expander("📤 Instagram साठी Caption Export करा"):
-        captions = "\n".join([s["caption"] for s in stock_data])
-        st.code(captions, language="markdown")
+# 📊 Options Trading Signals
+with st.expander("📈 Options Trading Signals"):
+    options_data = pd.DataFrame({
+        "Stock": ["TATASTEEL", "RELIANCE"],
+        "Expiry": ["22 Aug", "22 Aug"],
+        "Strike": ["₹1420 CE", "₹2600 PE"],
+        "Signal": ["Buy", "Sell"],
+        "Verdict": ["✅", "❌"],
+        "Caption": [
+            "📈 TATASTEEL ₹1420 CE – खरेदी करा",
+            "📉 RELIANCE ₹2600 PE – विक्री करा"
+        ]
+    })
+    st.table(options_data)
 
-# 📅 Timestamp + Footer
-if stock_data:
-    st.markdown("---")
-    st.caption(f"🔄 शेवटचा अपडेट: {stock_data[0]['timestamp']}")
-st.caption("© Suresh Yadav | Insta-ready | Mentor-grade Marathi dashboard")
+# 📤 Caption Exporter
+st.subheader("📤 Instagram Caption Exporter")
+selected_caption = options_data["Caption"][0]  # Default caption
+if st.button("Generate Marathi Caption"):
+    st.success(f"✅ Caption तयार: \n\n{selected_caption}")
+
+# 🖼️ Footer
+st.markdown("---")
+st.markdown("© Suresh Yadav | Marathi Trading Dashboard")
