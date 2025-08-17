@@ -32,6 +32,36 @@ for signal in index_signals:
         f"💡 **{signal['Index']} {signal['Type']} {signal['Strike']}**\n"
         f"💰 Premium: ₹{signal['Premium']} | 🎯 Target: ₹{signal['Target']} | 🛑 SL: ₹{signal['Stoploss']}"
     )
+# 🔹 1. Imports
+import streamlit as st
+import pandas as pd
+
+# 🔹 2. Direction Logic Function
+def get_trade_direction(rsi, macd_signal, sector_trend):
+    if rsi > 55 and macd_signal.lower() == "bullish" and sector_trend.lower() == "positive":
+        return "Buy ✅"
+    elif rsi < 45 and macd_signal.lower() == "bearish" and sector_trend.lower() == "negative":
+        return "Short Sell ❌"
+    else:
+        return "Watch Only 👀"
+
+# 🔹 3. Sample Data (तू हे CSV मधून घेऊ शकतोस)
+stocks = [
+    {"Stock": "BPCL", "Sector": "Oil & Gas", "RSI": 62, "MACD": "Bullish", "Sector Trend": "Positive"},
+    {"Stock": "Tata Motors", "Sector": "Automobile", "RSI": 38, "MACD": "Bearish", "Sector Trend": "Negative"},
+    {"Stock": "SBI Cards", "Sector": "Financial", "RSI": 50, "MACD": "Neutral", "Sector Trend": "Neutral"},
+]
+
+# 🔹 4. Apply Direction Logic
+for stock in stocks:
+    stock["Direction"] = get_trade_direction(stock["RSI"], stock["MACD"], stock["Sector Trend"])
+
+# 🔹 5. Convert to DataFrame
+df = pd.DataFrame(stocks)
+
+# 🔹 6. Display in Dashboard
+st.markdown("## 📊 आजचे Intraday संकेत — Direction सहित")
+st.dataframe(df, use_container_width=True)
 
 
 
