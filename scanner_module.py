@@ -1,30 +1,51 @@
-import datetime
+# scanner_module.py
+import pandas as pd
+import random
 
-def scan_stocks():
-    now = datetime.datetime.now().strftime("%d-%m-%Y %I:%M %p")
+def load_nifty200(csv_path):
+    df = pd.read_csv(csv_path)
+    df = df[df["Symbol"].notna()]
+    return df
 
-    stocks = [
-        {"name": "TCS", "strike": 3800, "verdict": "✅ BUY"},
-        {"name": "INFY", "strike": 1450, "verdict": "⚠️ WATCH"},
-        {"name": "RELIANCE", "strike": 2500, "verdict": "❌ AVOID"},
-    ]
+def get_top10(df):
+    return df.sample(10).reset_index(drop=True)
 
-    verdict_map = {
-        "✅ BUY": "🟢 खरेदी",
-        "⚠️ WATCH": "🟡 निरीक्षण",
-        "❌ AVOID": "🔴 टाळा"
-    }
+# 📈 Index Options Signal Generator
+def get_index_signals():
+    index_data = []
 
-    enhanced = []
-    for stock in stocks:
-        verdict = verdict_map.get(stock["verdict"], stock["verdict"])
-        caption = f"{stock['name']} – स्ट्राइक ₹{stock['strike']} – {verdict}"
-        enhanced.append({
-            "name": stock["name"],
-            "strike": stock["strike"],
-            "verdict": verdict,
-            "caption": caption,
-            "timestamp": now
-        })
+    # Nifty Signal
+    nifty_spot = 22450  # तू API किंवा manual update करू शकतोस
+    nifty_strike = round(nifty_spot / 50) * 50
+    nifty_direction = random.choice(["Call", "Put"])
+    nifty_entry = 110 if nifty_direction == "Call" else 95
+    nifty_target = nifty_entry + 40
+    nifty_stoploss = nifty_entry - 25
 
-    return enhanced
+    index_data.append({
+        "Index": "Nifty",
+        "Type": nifty_direction,
+        "Strike": nifty_strike,
+        "Premium": nifty_entry,
+        "Target": nifty_target,
+        "Stoploss": nifty_stoploss
+    })
+
+    # BankNifty Signal
+    banknifty_spot = 48200
+    banknifty_strike = round(banknifty_spot / 100) * 100
+    banknifty_direction = random.choice(["Call", "Put"])
+    banknifty_entry = 180 if banknifty_direction == "Call" else 160
+    banknifty_target = banknifty_entry + 60
+    banknifty_stoploss = banknifty_entry - 40
+
+    index_data.append({
+        "Index": "BankNifty",
+        "Type": banknifty_direction,
+        "Strike": banknifty_strike,
+        "Premium": banknifty_entry,
+        "Target": banknifty_target,
+        "Stoploss": banknifty_stoploss
+    })
+
+    return index_data
