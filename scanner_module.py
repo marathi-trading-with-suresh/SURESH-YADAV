@@ -10,7 +10,9 @@ import pandas as pd
 # -----------------------------
 # 1) Nifty200 CSV Loader
 # -----------------------------
-def load_nifty200(csv_path: str = "Nifty200list.csv") -> pd.DataFrame:
+def load_nifty200(csv_path="Nifty200list.csv"):
+    ...
+
     """
     Nifty200 CSV फाईल लोड करा.
     अपेक्षित कॉलम्स (case-insensitive): stock/symbol, sector, rsi, macd, sector trend
@@ -136,3 +138,4 @@ def get_index_signals() -> List[Dict]:
         }
         out.append(signal)
     return out
+
