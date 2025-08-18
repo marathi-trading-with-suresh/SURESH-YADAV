@@ -1,53 +1,46 @@
-# scanner_module.py
 import pandas as pd
-import os
-import random
 
-def load_nifty200(csv_path):
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"CSV फाईल सापडली नाही: {csv_path}")
-    df = pd.read_csv(csv_path)
-    df = df[df["Symbol"].notna()]
-    return df
+# ✅ Nifty200 CSV Load करणारी Function
+def load_nifty200(csv_path="Nifty200list.csv"):
+    """Nifty200 CSV फाईल लोड करा"""
+    try:
+        df = pd.read_csv(csv_path)
+        return df
+    except Exception as e:
+        print(f"Error loading {csv_path}: {e}")
+        return pd.DataFrame()
 
+# ✅ Top 10 stocks मिळवणारी Function
 def get_top10(df):
-    return df.sample(10).reset_index(drop=True)
+    """Top 10 Intraday Stocks काढा (score नुसार)"""
+    df["score"] = 0
+    df.loc[df["rsi"] > 55, "score"] += 1
+    df.loc[df["macd"].astype(str).str.lower() == "bullish", "score"] += 1
+    df.loc[df["sector trend"].astype(str).str.lower() == "positive", "score"] += 1
+    return df.sort_values(by="score", ascending=False).head(10).copy()
 
+# ✅ Index Options signals (demo)
 def get_index_signals():
-    index_data = []
+    """Index Options signals परत करा"""
+    indices = {
+        "Nifty50": 22450,
+        "BankNifty": 48200,
+        "Sensex": 74200,
+        "Midcap": 37000,
+        "Smallcap": 14500,
+        "FinNifty": 21500
+    }
 
-    # Nifty
-    nifty_spot = 22450
-    nifty_strike = round(nifty_spot / 50) * 50
-    nifty_direction = random.choice(["Call", "Put"])
-    nifty_entry = 110 if nifty_direction == "Call" else 95
-    nifty_target = nifty_entry + 40
-    nifty_stoploss = nifty_entry - 25
-
-    index_data.append({
-        "Index": "Nifty",
-        "Type": nifty_direction,
-        "Strike": nifty_strike,
-        "Premium": nifty_entry,
-        "Target": nifty_target,
-        "Stoploss": nifty_stoploss
-    })
-
-    # BankNifty
-    banknifty_spot = 48200
-    banknifty_strike = round(banknifty_spot / 100) * 100
-    banknifty_direction = random.choice(["Call", "Put"])
-    banknifty_entry = 180 if banknifty_direction == "Call" else 160
-    banknifty_target = banknifty_entry + 60
-    banknifty_stoploss = banknifty_entry - 40
-
-    index_data.append({
-        "Index": "BankNifty",
-        "Type": banknifty_direction,
-        "Strike": banknifty_strike,
-        "Premium": banknifty_entry,
-        "Target": banknifty_target,
-        "Stoploss": banknifty_stoploss
-    })
-
-    return index_data
+    signals = []
+    for name, spot in indices.items():
+        signals.append({
+            "name": name,
+            "spot": spot,
+            "direction": "CALL" if spot % 2 == 0 else "PUT",
+            "strike": round(spot / 50) * 50,
+            "entry": 100,
+            "target": 140,
+            "stoploss": 80,
+            "verdict": "खरेदी" if spot % 2 == 0 else "विक्री"
+        })
+    return signals
