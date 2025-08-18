@@ -1,4 +1,4 @@
-stock,sector_trend,Symbol,macd ,rsi,
+stock,sector,Symbol,macd ,rsi,sector_trend
 ABB India Ltd.,Capital Goods,ABB,,,
 ACC Ltd.,Construction Materials,ACC,,,
 APL Apollo Tubes Ltd.,Capital Goods,APLAPOLLO,,,
@@ -199,5 +199,6 @@ Waaree Energies Ltd.,Capital Goods,WAAREEENER,,,
 Wipro Ltd.,Information Technology,WIPRO,,,
 Yes Bank Ltd.,Financial Services,YESBANK,,,
 Zydus Lifesciences Ltd.,Healthcare,ZYDUSLIFE,,,
+
 
 
