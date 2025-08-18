@@ -11,7 +11,6 @@ import pandas as pd
 # 1) Nifty200 CSV Loader
 # -----------------------------
 def load_nifty200(csv_path="Nifty200list.csv"):
-    ...
 
     """
     Nifty200 CSV फाईल लोड करा.
@@ -138,4 +137,5 @@ def get_index_signals() -> List[Dict]:
         }
         out.append(signal)
     return out
+
 
