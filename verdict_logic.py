@@ -1,4 +1,4 @@
-def get_trade_verdict(rsi, macd, sector_trend):
+def: get_trade_verdict(rsi, macd, sector_trend):
     macd = str(macd).lower()
     sector_trend = str(sector_trend).lower()
 
