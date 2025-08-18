@@ -97,3 +97,39 @@ def generate_option_signal(
             df = yf.download(specs["yf"], period="5d", interval="1m", progress=False)
             spot = float(df["Close"].dropna().iloc[-1])
         except Exception:
+            spot = 25000.0  # safe fallback
+
+    # ATM strike & vol
+    strike = _nearest_strike(spot, specs["step"])
+    sigma = _hist_vol_yf(specs["yf"], lookback=60, fallback=0.22)
+
+    # Estimated premium
+    opt_type = "C" if side.upper().startswith("C") else "P"
+    est = _bs_price(spot, strike, T, risk_free, sigma, opt=opt_type)
+    est = float(max(est, 1.0))  # avoid tiny values
+
+    # Entry band & risk management
+    entry_low = max(1.0, round(est - entry_band_inr / 2))
+    entry_high = round(est + entry_band_inr / 2)
+    entry_avg = round((entry_low + entry_high) / 2)
+
+    target = max(1.0, round(entry_avg * (1 + target_pct)))
+    stoploss = max(1.0, round(entry_avg * (1 - sl_pct)))
+
+    rr = (target - entry_avg) / max(1e-6, (entry_avg - stoploss))
+    verdict = "खरेदी" if rr >= 1.2 else "थांबा"
+
+    return {
+        "name": name.upper(),
+        "direction": "CALL" if opt_type == "C" else "PUT",
+        "strike": strike,
+        "expiry": expiry.strftime("%d-%b-%y"),
+        "spot": round(spot, 2),
+        "entry_low": entry_low,
+        "entry_high": entry_high,
+        "entry": entry_avg,
+        "target": target,
+        "stoploss": stoploss,
+        "risk_reward": round(rr, 2),
+        "verdict": verdict,
+    }
