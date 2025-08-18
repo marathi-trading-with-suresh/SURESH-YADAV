@@ -22,13 +22,13 @@ except Exception as e:
     st.error(f"❌ CSV लोड करताना त्रुटी: {e}")
     st.stop()
 
-# 🔍 Top 10 Intraday Stocks
+# 🔍 Top 10 Intraday Stocks (RSI + MACD + Sector Trend)
 df["score"] = 0
 df.loc[df["rsi"] > 55, "score"] += 1
 df.loc[df["macd"].astype(str).str.lower() == "bullish", "score"] += 1
 df.loc[df["sector trend"].astype(str).str.lower() == "positive", "score"] += 1
 
-# ✅ Fix: Define top10
+# ✅ Pick Top 10
 top10 = df.sort_values(by="score", ascending=False).head(10).copy()
 
 # 🧠 Verdict Logic
@@ -36,9 +36,13 @@ top10["Verdict"] = top10.apply(
     lambda row: get_trade_verdict(row["rsi"], row["macd"], row["sector trend"]),
     axis=1
 )
+
 # 📊 Display Stock Table
 st.subheader("📌 आजचे Intraday Stocks – Nifty200 मधून")
-st.dataframe(top10[["stock", "sector", "rsi", "macd", "sector trend", "Verdict"]], use_container_width=True)
+st.dataframe(
+    top10[["stock", "sector", "rsi", "macd", "sector trend", "Verdict"]],
+    use_container_width=True
+)
 
 # 📈 Index Option Signals
 st.subheader("📊 आजचे Index संकेत – Options Trading साठी")
@@ -55,9 +59,6 @@ indices = {
 for name, spot in indices.items():
     signal = generate_option_signal(name, spot)
     st.markdown(
-        f"💡 **{signal['name']} {signal['direction']} {signal['strike']}**\n"
+        f"💡 **{signal['name']} {signal['direction']} {signal['strike']}**\n\n"
         f"💰 Premium: ₹{signal['entry']} | 🎯 Target: ₹{signal['target']} | 🛑 SL: ₹{signal['stoploss']} | 📢 Verdict: {signal['verdict']}"
     )
-
-
-
