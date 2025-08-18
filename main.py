@@ -3,7 +3,7 @@ import pandas as pd
 
 # आपले modules
 from scanner_module import load_nifty200, get_top10
-from option_signals import generate_option_signal
+from index_signals import generate_option_signal
 
 # ----------------------------
 # Streamlit App सुरू
@@ -61,3 +61,4 @@ for name, spot in indices.items():
         f"🎯 Target: **₹{sig['target']}**   |   🛑 SL: **₹{sig['stoploss']}**  \n"
         f"R:R ≈ {sig['risk_reward']}  |  Verdict: **{sig['verdict']}**"
     )
+
