@@ -76,3 +76,24 @@ for name, spot in indices.items():
         f"💡 **{name} {direction} {strike}**\n"
         f"💰 Premium: ₹{entry} | 🎯 Target: ₹{target} | 🛑 SL: ₹{stoploss} | 📢 Verdict: {verdict}"
     )
+# 📋 Normalize columns
+df.columns = df.columns.str.strip().str.lower()
+
+# ✅ Rename known mismatches
+df.rename(columns={
+    "macd signal": "macd",
+    "macd histogram": "macd",
+    "macd line": "macd",
+    "macd": "macd"  # fallback
+}, inplace=True)
+
+# 🛡️ Debug output
+st.write("📋 उपलब्ध कॉलम्स:", df.columns.tolist())
+
+# ✅ Required columns
+required_cols = ["stock", "sector", "rsi", "macd", "sector trend"]
+missing = set(required_cols) - set(df.columns)
+
+if missing:
+    st.error("❌ काही आवश्यक कॉलम नाहीत: " + ", ".join(missing))
+    st.stop()
