@@ -1,64 +1,84 @@
+# main.py  — Streamlit app (copy–paste ready)
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils import auto_column_mapper
-from verdict_logic import get_trade_verdict
-from option_signals import generate_option_signal
 
-# 📂 CSV path
-CSV_PATH = "Nifty200list.csv"
+# --- Project imports (must exist in repo) ---
+from scanner_module import load_nifty200, get_top10, get_index_signals
 
-# 🖥️ Streamlit UI
+# Optional helpers (fallbacks if module/func missing)
+try:
+    from utils import auto_column_mapper
+except Exception:
+    def auto_column_mapper(df: pd.DataFrame) -> pd.DataFrame:
+        return df  # no-op if utils not present
+
+try:
+    from verdict_logic import get_trade_verdict
+except Exception:
+    def get_trade_verdict(rsi, macd, sector_trend) -> str:
+        # simple fallback verdict
+        bull = (pd.to_numeric(pd.Series([rsi]), errors="coerce").iloc[0] or 0) > 55
+        macd_ok = str(macd).strip().lower() == "bullish"
+        sector_ok = str(sector_trend).strip().lower() in ("positive", "up", "bullish")
+        return "खरेदी" if (bull and macd_ok and sector_ok) else "विक्री/थांबा"
+
+# ---------------- UI ----------------
 st.set_page_config(page_title="📊 माझा ट्रेडिंग साथी – Suresh", layout="centered")
 st.title("📈 माझा ट्रेडिंग साथी – Suresh")
 st.caption(f"🔄 अपडेट वेळ: {datetime.now().strftime('%H:%M:%S')} IST")
 
-# 📥 CSV लोड करा
-try:
-    df = pd.read_csv(CSV_PATH)
-    df = auto_column_mapper(df)
-    st.success("✅ CSV यशस्वीपणे लोड झाली!")
-except Exception as e:
-    st.error(f"❌ CSV लोड करताना त्रुटी: {e}")
+# 1) Load Nifty200 CSV
+df = load_nifty200("Nifty200list.csv")
+if df.empty:
+    st.error("❌ Nifty200list.csv लोड होत नाही. कृपया फाईल तपासा.")
     st.stop()
 
-# 🔍 Top 10 Intraday Stocks (RSI + MACD + Sector Trend)
-df["score"] = 0
-df.loc[df["rsi"] > 55, "score"] += 1
-df.loc[df["macd"].astype(str).str.lower() == "bullish", "score"] += 1
-df.loc[df["sector trend"].astype(str).str.lower() == "positive", "score"] += 1
+# Normalize columns if helper available
+df = auto_column_mapper(df)
+st.success("✅ CSV यशस्वीपणे लोड झाली!")
 
-# ✅ Pick Top 10
-top10 = df.sort_values(by="score", ascending=False).head(10).copy()
+# 2) Top 10 Intraday stocks (scanner_module logic)
+top10 = get_top10(df).copy()
 
-# 🧠 Verdict Logic
-top10["Verdict"] = top10.apply(
-    lambda row: get_trade_verdict(row["rsi"], row["macd"], row["sector trend"]),
-    axis=1
-)
+# 3) Verdict column (uses verdict_logic if present)
+if {"rsi", "macd", "sector trend"}.issubset(set(map(str.lower, top10.columns))):
+    # make sure we access the correct-case columns
+    # find actual names present
+    def col(name):
+        for c in top10.columns:
+            if c.lower() == name:
+                return c
+        return name
 
-# 📊 Display Stock Table
-st.subheader("📌 आजचे Intraday Stocks – Nifty200 मधून")
-st.dataframe(
-    top10[["stock", "sector", "rsi", "macd", "sector trend", "Verdict"]],
-    use_container_width=True
-)
+    rsi_col = col("rsi")
+    macd_col = col("macd")
+    sect_col = col("sector trend")
 
-# 📈 Index Option Signals
-st.subheader("📊 आजचे Index संकेत – Options Trading साठी")
-
-indices = {
-    "Nifty50": 22450,
-    "BankNifty": 48200,
-    "Sensex": 74200,
-    "Midcap": 37000,
-    "Smallcap": 14500,
-    "FinNifty": 21500
-}
-
-for name, spot in indices.items():
-    signal = generate_option_signal(name, spot)
-    st.markdown(
-        f"💡 **{signal['name']} {signal['direction']} {signal['strike']}**\n\n"
-        f"💰 Premium: ₹{signal['entry']} | 🎯 Target: ₹{signal['target']} | 🛑 SL: ₹{signal['stoploss']} | 📢 Verdict: {signal['verdict']}"
+    top10["Verdict"] = top10.apply(
+        lambda row: get_trade_verdict(row[rsi_col], row[macd_col], row[sect_col]),
+        axis=1
     )
+else:
+    # fallback if expected cols missing
+    top10["Verdict"] = top10.get("score", 0).apply(lambda s: "खरेदी" if s >= 2 else "विक्री/थांबा")
+
+# 4) Show table
+st.subheader("📌 आजचे Intraday Stocks – Nifty200 मधून")
+
+# choose safe display columns
+pref_cols = ["stock", "sector", "rsi", "macd", "sector trend", "Verdict", "score"]
+show_cols = [c for c in pref_cols if c in top10.columns]
+st.dataframe(top10[show_cols], use_container_width=True)
+
+# 5) Index option signals
+st.subheader("📊 आजचे Index संकेत – Options Trading साठी")
+for sig in get_index_signals():
+    st.markdown(
+        f"💡 **{sig['name']} {sig['direction']} {sig['strike']}**  \n"
+        f"💰 Premium: ₹{sig['entry']} | 🎯 Target: ₹{sig['target']} | 🛑 SL: ₹{sig['stoploss']} | "
+        f"📢 Verdict: {sig['verdict']}"
+    )
+
+st.caption("ℹ️ सूचनाः हे शैक्षणिक डेमो आहे. Live trading आधी स्वतःची पडताळणी करा.")
