@@ -25,6 +25,13 @@ def get_top10(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
 
+    def _find_col(frame, names):
+        low = {c.lower(): c for c in frame.columns}
+        for n in names:
+            if n.lower() in low:
+                return low[n.lower()]
+        return None
+
     col_stock = _find_col(df, ["stock", "symbol", "name"])
     col_sector = _find_col(df, ["sector", "industry"])
     col_rsi = _find_col(df, ["rsi"])
@@ -34,18 +41,25 @@ def get_top10(df: pd.DataFrame) -> pd.DataFrame:
     work = df.copy()
     work["score"] = 0
 
+    # RSI rule (numeric cast)
     if col_rsi:
-        work.loc[pd.to_numeric(work[col_rsi], errors="coerce") > 55, "score"] += 1
+        rsi_num = pd.to_numeric(work[col_rsi], errors="coerce")
+        work.loc[rsi_num > 55, "score"] += 1
+
+    # MACD rule (text == 'bullish')
     if col_macd:
         macd_series = work[col_macd].astype(str).str.strip().str.lower()
         work.loc[macd_series == "bullish", "score"] += 1
+
+    # Sector Trend rule (positive/up/bullish)
     if col_sector_trend:
-        pos_vals = {"positive", "up", "bullish"}
-        sect_series = work[col_sector_trend].astype(str).strip().str.lower()
-        work.loc[sect_series.isin(pos_vals), "score"] += 1
+        sect_series = work[col_sector_trend].astype(str).str.strip().str.lower()
+        work.loc[sect_series.isin({"positive", "up", "bullish"})] += 0  # ensure column exists
+        work.loc[sect_series.isin({"positive", "up", "bullish"}), "score"] += 1
 
     top10 = work.sort_values("score", ascending=False).head(10).copy()
 
+    # Friendly column names
     if col_stock and "stock" not in top10.columns:
         top10.rename(columns={col_stock: "stock"}, inplace=True)
     if col_sector and "sector" not in top10.columns:
@@ -138,3 +152,4 @@ for sig in get_index_signals():
         f"📢 Verdict: {sig['verdict']}"
     )
 st.caption("ℹ️ शैक्षणिक डेमो. Live trading आधी स्वतः पडताळणी करा.")
+
