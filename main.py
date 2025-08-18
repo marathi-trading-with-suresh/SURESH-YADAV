@@ -25,9 +25,8 @@ except Exception as e:
 # 🔍 Top 10 Intraday Stocks
 df["score"] = 0
 df.loc[df["rsi"] > 55, "score"] += 1
-df.loc[df["macd"].str.lower() == "bullish", "score"] += 1
-df.loc[df["sector trend"].str.lower() == "positive", "score"] += 1
-top10 = df.sort_values(by="score", ascending=False).head(10)
+df.loc[df["macd"].astype(str).str.lower() == "bullish", "score"] += 1
+df.loc[df["sector trend"].astype(str).str.lower() == "positive", "score"] += 1
 
 top10["Verdict"] = top10.apply(
     lambda row: get_trade_verdict(row["rsi"], row["macd"], row["sector trend"]),
@@ -56,4 +55,5 @@ for name, spot in indices.items():
         f"💡 **{signal['name']} {signal['direction']} {signal['strike']}**\n"
         f"💰 Premium: ₹{signal['entry']} | 🎯 Target: ₹{signal['target']} | 🛑 SL: ₹{signal['stoploss']} | 📢 Verdict: {signal['verdict']}"
     )
+
 
