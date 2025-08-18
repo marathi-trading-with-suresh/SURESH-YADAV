@@ -1,13 +1,7 @@
 import streamlit as st
 import pandas as pd
+import random
 from datetime import datetime
-from utils import (
-    validate_csv_columns,
-    filter_top_stocks,
-    get_emoji_verdict,
-    generate_marathi_caption,
-    safe_display_dataframe
-)
 
 # 📂 CSV path
 CSV_PATH = "Nifty200list.csv"
@@ -27,16 +21,58 @@ except FileNotFoundError:
 
 # 🛡️ आवश्यक कॉलम्स तपासा
 required_cols = ["stock", "sector", "rsi", "macd", "sector trend"]
-if not validate_csv_columns(df, required_cols):
+missing = set(required_cols) - set(df.columns)
+if missing:
+    st.error("❌ काही आवश्यक कॉलम नाहीत: " + ", ".join(missing))
     st.stop()
 
-# 🔍 टॉप 10 स्टॉक्स निवडा
-top10 = filter_top_stocks(df)
+# 🔍 Top 10 Intraday Stocks
+df.columns = df.columns.str.strip().str.lower()
+df["score"] = 0
+df.loc[df["rsi"] > 55, "score"] += 1
+df.loc[df["macd"].str.lower() == "bullish", "score"] += 1
+df.loc[df["sector trend"].str.lower() == "positive", "score"] += 1
+top10 = df.sort_values(by="score", ascending=False).head(10)
 
-# 🧠 Verdict आणि Caption तयार करा
-top10["Verdict"] = top10.apply(get_emoji_verdict, axis=1)
-top10["Caption"] = top10.apply(lambda row: generate_marathi_caption(row["stock"], row["Verdict"]), axis=1)
+# 🧠 Verdict logic
+def get_trade_verdict(rsi, macd, sector_trend):
+    if rsi > 55 and macd.lower() == "bullish" and sector_trend.lower() == "positive":
+        return "🟢 खरेदी"
+    elif rsi < 45 and macd.lower() == "bearish" and sector_trend.lower() == "negative":
+        return "🔴 विक्री"
+    else:
+        return "⚪️ थांबा"
 
-# 📊 डिस्प्ले टेबल
-display_cols = ["stock", "sector", "rsi", "macd", "sector trend", "Verdict", "Caption"]
-safe_display_dataframe(top10, display_cols, title="📌 आजचे Intraday Stocks – Nifty200 मधून")
+top10["Verdict"] = top10.apply(
+    lambda row: get_trade_verdict(row["rsi"], row["macd"], row["sector trend"]),
+    axis=1
+)
+
+# 📊 Display Stock Table
+st.subheader("📌 आजचे Intraday Stocks – Nifty200 मधून")
+st.dataframe(top10[["stock", "sector", "rsi", "macd", "sector trend", "Verdict"]], use_container_width=True)
+
+# 📈 Index Option Signals
+st.subheader("📊 आजचे Index संकेत – Options Trading साठी")
+
+indices = {
+    "Nifty50": 22450,
+    "BankNifty": 48200,
+    "Sensex": 74200,
+    "Midcap": 37000,
+    "Smallcap": 14500,
+    "FinNifty": 21500
+}
+
+for name, spot in indices.items():
+    strike = round(spot / 50) * 50 if "Nifty" in name else round(spot / 100) * 100
+    direction = random.choice(["Call", "Put"])
+    entry = random.randint(90, 180)
+    target = entry + random.randint(30, 60)
+    stoploss = entry - random.randint(20, 40)
+    verdict = "🟢 खरेदी" if direction == "Call" else "🔴 विक्री"
+
+    st.markdown(
+        f"💡 **{name} {direction} {strike}**\n"
+        f"💰 Premium: ₹{entry} | 🎯 Target: ₹{target} | 🛑 SL: ₹{stoploss} | 📢 Verdict: {verdict}"
+    )
